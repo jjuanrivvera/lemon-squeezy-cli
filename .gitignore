@@ -1,0 +1,8 @@
+/bin/
+/dist/
+/completions/*.bash
+/completions/*.zsh
+/completions/*.fish
+coverage.out
+*.test
+.DS_Store

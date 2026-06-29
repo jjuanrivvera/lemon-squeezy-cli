@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "lemon-squeezy-cli",
+  "version": "0.1.0",
+  "description": "Operate the Lemon Squeezy e-commerce API from the terminal — stores, products, orders, subscriptions, customers, discounts, license keys, checkouts, and webhooks.",
+  "author": { "name": "jjuanrivvera", "url": "https://github.com/jjuanrivvera" },
+  "homepage": "https://github.com/jjuanrivvera/lemon-squeezy-cli",
+  "repository": "https://github.com/jjuanrivvera/lemon-squeezy-cli",
+  "license": "MIT",
+  "skills": "./skills",
+  "keywords": ["lemonsqueezy", "lemon-squeezy", "ecommerce", "subscriptions", "license-keys", "cli", "ai-agent"]
+}

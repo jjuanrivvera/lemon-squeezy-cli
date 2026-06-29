@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-marketplace.json",
+  "name": "lsqueezy",
+  "owner": { "name": "jjuanrivvera", "url": "https://github.com/jjuanrivvera" },
+  "plugins": [
+    {
+      "name": "lemon-squeezy-cli",
+      "source": "./",
+      "version": "0.1.0",
+      "description": "Operate the Lemon Squeezy e-commerce API from the terminal via the `lsqueezy` CLI.",
+      "homepage": "https://github.com/jjuanrivvera/lemon-squeezy-cli",
+      "keywords": ["lemonsqueezy", "ecommerce", "subscriptions", "license-keys", "cli", "ai-agent"]
+    }
+  ]
+}

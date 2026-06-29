@@ -1,0 +1,31 @@
+{
+  "_comment": "Spec-derived manifest (cliwright GOAL.md §11). Derived from the Lemon Squeezy API (https://docs.lemonsqueezy.com/api) and the official SDK resource set. Enforced by scripts/spec-check.sh so the same API always yields the same CLI surface. Lemon Squeezy speaks JSON:API; auth is a bearer token; pagination is page-based (page[size]/page[number]).",
+  "binary": "lsqueezy",
+  "base_url": "https://api.lemonsqueezy.com/v1",
+  "auth": "bearer-token",
+  "media_type": "application/vnd.api+json",
+  "pagination": "page",
+  "rate_limit": "300/min",
+  "resources": [
+    { "name": "stores", "verbs": ["list", "get"], "read_only": true, "key_fields": ["id", "name", "slug", "currency", "total_sales"] },
+    { "name": "products", "verbs": ["list", "get"], "read_only": true, "key_fields": ["id", "store_id", "name", "status", "price"] },
+    { "name": "variants", "verbs": ["list", "get"], "read_only": true, "key_fields": ["id", "product_id", "name", "price", "status"] },
+    { "name": "prices", "verbs": ["list", "get"], "read_only": true, "key_fields": ["id", "variant_id", "category", "scheme", "unit_price"] },
+    { "name": "files", "verbs": ["list", "get"], "read_only": true, "key_fields": ["id", "variant_id", "name", "size_formatted", "status"] },
+    { "name": "customers", "verbs": ["list", "get", "create", "update", "archive"], "key_fields": ["id", "name", "email", "status", "country"] },
+    { "name": "orders", "verbs": ["list", "get", "refund", "generate-invoice"], "key_fields": ["id", "order_number", "user_email", "total_formatted", "status"] },
+    { "name": "order-items", "verbs": ["list", "get"], "read_only": true, "key_fields": ["id", "order_id", "product_name", "variant_name", "quantity"] },
+    { "name": "subscriptions", "verbs": ["list", "get", "update", "cancel"], "key_fields": ["id", "product_name", "user_email", "status", "renews_at"] },
+    { "name": "subscription-items", "verbs": ["list", "get", "update", "current-usage"], "key_fields": ["id", "subscription_id", "price_id", "quantity", "is_usage_based"] },
+    { "name": "subscription-invoices", "verbs": ["list", "get", "refund", "generate-invoice"], "key_fields": ["id", "subscription_id", "user_email", "total_formatted", "status"] },
+    { "name": "usage-records", "verbs": ["list", "get", "create"], "key_fields": ["id", "subscription_item_id", "quantity", "action"] },
+    { "name": "discounts", "verbs": ["list", "get", "create", "delete"], "key_fields": ["id", "name", "code", "amount", "amount_type", "status"] },
+    { "name": "discount-redemptions", "verbs": ["list", "get"], "read_only": true, "key_fields": ["id", "discount_id", "order_id", "discount_code", "amount"] },
+    { "name": "license-keys", "verbs": ["list", "get", "update"], "key_fields": ["id", "key_short", "user_email", "status", "activation_limit", "instances_count"] },
+    { "name": "license-key-instances", "verbs": ["list", "get"], "read_only": true, "key_fields": ["id", "license_key_id", "name", "identifier"] },
+    { "name": "checkouts", "verbs": ["list", "get", "create"], "key_fields": ["id", "store_id", "variant_id", "url", "expires_at"] },
+    { "name": "webhooks", "verbs": ["list", "get", "create", "update", "delete"], "key_fields": ["id", "store_id", "url", "last_sent_at"] },
+    { "name": "users", "verbs": ["me"], "read_only": true, "key_fields": ["id", "name", "email"] },
+    { "name": "license", "verbs": ["activate", "validate", "deactivate"], "key_fields": ["valid", "license_key", "instance"], "note": "License API (non-JSON:API; form-encoded; store key optional)" }
+  ]
+}

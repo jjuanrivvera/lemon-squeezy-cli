@@ -1,0 +1,76 @@
+# .goreleaser.yaml — lsqueezy (cliwright GOAL.md §5). Run `goreleaser check` in CI.
+version: 2
+
+before:
+  hooks: [go mod tidy, ./scripts/completions.sh]
+
+builds:
+  - id: lsqueezy
+    main: .
+    binary: lsqueezy
+    env: [CGO_ENABLED=0]
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    ignore:
+      - { goos: windows, goarch: arm64 }
+    ldflags:
+      - -s -w
+      - -X {{ .ModulePath }}/internal/version.Version={{ .Version }}
+      - -X {{ .ModulePath }}/internal/version.Commit={{ .Commit }}
+      - -X {{ .ModulePath }}/internal/version.Date={{ .Date }}
+
+archives:
+  - formats: [tar.gz]
+    format_overrides:
+      - { goos: windows, formats: [zip] }
+    files: [README.md, LICENSE, completions/*]
+
+checksum: { name_template: checksums.txt }
+
+# Explicit release target so `goreleaser check` validates without a configured git remote.
+release:
+  github:
+    owner: jjuanrivvera
+    name: lemon-squeezy-cli
+
+# Homebrew: use homebrew_casks (NOT the deprecated brews:). The cask is lemon-squeezy-cli,
+# but the binary inside the archive is lsqueezy — so `binaries:` (plural list) is required,
+# and an unsigned arm64 binary is SIGKILL'd by Gatekeeper without the xattr postflight.
+homebrew_casks:
+  - name: lemon-squeezy-cli
+    binaries: [lsqueezy]
+    repository: { owner: jjuanrivvera, name: homebrew-lemon-squeezy-cli }
+    homepage: https://github.com/jjuanrivvera/lemon-squeezy-cli
+    hooks:
+      post:
+        install: |
+          system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/lsqueezy"]
+
+scoops:
+  - repository: { owner: jjuanrivvera, name: scoop-lemon-squeezy-cli }   # this bucket repo must already exist
+
+nfpms:
+  - formats: [deb, rpm, apk]
+    bindir: /usr/bin
+    maintainer: jjuanrivvera
+    contents:
+      - { src: completions/lsqueezy.bash, dst: /usr/share/bash-completion/completions/lsqueezy }
+      - { src: completions/lsqueezy.zsh,  dst: /usr/share/zsh/site-functions/_lsqueezy }
+      - { src: completions/lsqueezy.fish, dst: /usr/share/fish/vendor_completions.d/lsqueezy.fish }
+
+sboms:
+  - artifacts: archive          # syft SBOMs
+
+signs:                          # cosign keyless (needs CI OIDC: permissions id-token: write)
+  - cmd: cosign
+    artifacts: checksum
+    output: true
+    args: ["sign-blob", "--yes", "--output-signature=${signature}", "--output-certificate=${certificate}", "${artifact}"]
+
+changelog:
+  groups:
+    - { title: Features, regexp: '^.*?feat(\(.+\))??!?:.+$', order: 0 }
+    - { title: Fixes, regexp: '^.*?fix(\(.+\))??!?:.+$', order: 1 }
+    - { title: Performance, regexp: '^.*?perf(\(.+\))??!?:.+$', order: 2 }
+  filters:
+    exclude: ['^docs:', '^test:', '^chore:', '^ci:', merge conflict, Merge pull request, Merge branch]
