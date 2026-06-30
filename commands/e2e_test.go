@@ -72,12 +72,19 @@ func captureStdout(t *testing.T, fn func()) string {
 	old := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
+	// Drain the pipe concurrently. A sequential read-after-fn deadlocks when fn writes more
+	// than the OS pipe buffer (the writer blocks with no reader) — the buffer is ~64KB on
+	// Linux/macOS but much smaller on Windows, so e.g. `completion bash` hung the Windows CI.
+	done := make(chan string, 1)
+	go func() {
+		var buf bytes.Buffer
+		_, _ = buf.ReadFrom(r)
+		done <- buf.String()
+	}()
 	fn()
 	_ = w.Close()
 	os.Stdout = old
-	var buf bytes.Buffer
-	_, _ = buf.ReadFrom(r)
-	return buf.String()
+	return <-done
 }
 
 // jsonAPI writes a JSON:API body with the right content type.
