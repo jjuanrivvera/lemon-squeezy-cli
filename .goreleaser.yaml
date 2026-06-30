@@ -39,7 +39,10 @@ release:
 homebrew_casks:
   - name: lemon-squeezy-cli
     binaries: [lsqueezy]
-    repository: { owner: jjuanrivvera, name: homebrew-lemon-squeezy-cli }
+    # Cross-repo push needs a PAT (repo scope) in HOMEBREW_TAP_TOKEN; the default GITHUB_TOKEN
+    # can't write to the tap repo. When the secret is unset the token resolves empty and only
+    # this publish step fails — the GitHub release + artifacts still succeed.
+    repository: { owner: jjuanrivvera, name: homebrew-lemon-squeezy-cli, token: "{{ .Env.HOMEBREW_TAP_TOKEN }}" }
     homepage: https://github.com/jjuanrivvera/lemon-squeezy-cli
     hooks:
       post:
@@ -47,7 +50,8 @@ homebrew_casks:
           system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/lsqueezy"]
 
 scoops:
-  - repository: { owner: jjuanrivvera, name: scoop-lemon-squeezy-cli }   # this bucket repo must already exist
+  # Same cross-repo token requirement as the Homebrew tap (the bucket repo must already exist).
+  - repository: { owner: jjuanrivvera, name: scoop-lemon-squeezy-cli, token: "{{ .Env.HOMEBREW_TAP_TOKEN }}" }
 
 nfpms:
   - formats: [deb, rpm, apk]
