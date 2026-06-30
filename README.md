@@ -1,5 +1,7 @@
 # lsqueezy
 
+> 🏭 Built with [cliwright](https://github.com/jjuanrivvera/cliwright) — a spec-gated CLI factory.
+
 A polished, production-grade command-line interface for [Lemon Squeezy](https://lemonsqueezy.com) —
 manage stores, products, orders, subscriptions, customers, discounts, license keys, checkouts,
 and webhooks, and script it all with table/json/yaml/csv output, named profiles, retries, and an
@@ -143,6 +145,13 @@ make check      # fmt + vet + lint + test (local gate)
 make verify     # full acceptance gate (check + spec-check + cover-check + dod + judge)
 make setup-hooks
 ```
+
+## Roadmap / Pending
+
+- **Docs site** — `make docs-build` calls `mkdocs build`, but there's no `mkdocs.yml`, so it
+  fails today. Needs the MkDocs config plus getting-started and user-guide pages.
+- **`--jq` output filter** — not implemented yet.
+- **Tests** — deepen the `httptest` mock coverage.
 
 ## License
 
