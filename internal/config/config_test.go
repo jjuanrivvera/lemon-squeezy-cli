@@ -63,9 +63,13 @@ func TestUse_UnknownProfileErrors(t *testing.T) {
 }
 
 func TestDefaultDir_XDG(t *testing.T) {
-	t.Setenv("XDG_CONFIG_HOME", "/tmp/xdg")
-	assert.Equal(t, "/tmp/xdg/lemon-squeezy-cli", DefaultDir())
-	assert.Equal(t, "/tmp/xdg/lemon-squeezy-cli/config.yaml", DefaultPath())
+	// Build expected paths with filepath.Join so the test is portable: on Windows the
+	// separator is "\", and a hardcoded "/tmp/xdg/..." string would never match.
+	xdg := filepath.Join(t.TempDir(), "xdg")
+	t.Setenv("XDG_CONFIG_HOME", xdg)
+	wantDir := filepath.Join(xdg, "lemon-squeezy-cli")
+	assert.Equal(t, wantDir, DefaultDir())
+	assert.Equal(t, filepath.Join(wantDir, "config.yaml"), DefaultPath())
 }
 
 func TestDefaultDir_HomeFallback(t *testing.T) {

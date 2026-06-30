@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zalando/go-keyring"
 
 	"github.com/jjuanrivvera/lemon-squeezy-cli/commands"
 
@@ -20,7 +21,12 @@ import (
 	_ "github.com/jjuanrivvera/lemon-squeezy-cli/resources"
 )
 
-func init() { commands.Setup() }
+func init() {
+	// Use an in-memory keyring so the auth e2e tests never touch the real OS keychain —
+	// faster and deterministic, and it avoids minute-long stalls on the Windows runner.
+	keyring.MockInit()
+	commands.Setup()
+}
 
 func testEnv(t *testing.T, baseURL string) {
 	t.Helper()

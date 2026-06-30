@@ -17,11 +17,14 @@ jobs:
         with: { go-version: stable }
       - run: gofmt -l . | tee /dev/stderr | (! read)
       - run: go vet ./...
-      # install-mode: goinstall compiles golangci-lint with THIS job's Go (stable), so its
-      # build-Go is never older than the module's `go` directive — the prebuilt binary lags
-      # Go releases and refuses to run when go.mod targets a newer Go than it was built with.
-      - uses: golangci/golangci-lint-action@v6
-        with: { version: latest, install-mode: goinstall }
+      # Build golangci-lint v2 from source with THIS job's Go (stable): the prebuilt action
+      # binary lags Go releases and refuses to run when go.mod targets a newer Go than it was
+      # built with, and the action's goinstall mode resolves the v1 module path (which rejects
+      # a v2 config). Source-building from the /v2 path avoids both.
+      - name: golangci-lint
+        run: |
+          go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+          golangci-lint run ./...
       - name: docs-gen drift check
         run: make docs-gen && git diff --exit-code -- docs/commands
 
@@ -35,9 +38,13 @@ jobs:
         run: |
           go install golang.org/x/vuln/cmd/govulncheck@latest
           govulncheck ./...
-      - name: gosec (high-severity gate, prebuilt action)
-        uses: securego/gosec@v2.21.4
-        with: { args: '-severity high -confidence medium ./...' }
+      # Build gosec from source with this job's Go — the pinned gosec Docker image ships an
+      # older Go (GOTOOLCHAIN=local) that can't load a module whose go directive is newer.
+      # @latest built with the current toolchain compiles fine (the trap is only OLD pins).
+      - name: gosec (high-severity gate)
+        run: |
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          gosec -severity high -confidence medium ./...
 
   test:
     strategy:
