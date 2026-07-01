@@ -6,6 +6,12 @@
   "media_type": "application/vnd.api+json",
   "pagination": "page",
   "rate_limit": "300/min",
+  "_profile_comment": "profile_flag/profile_noun name the multi-profile selector so it reads naturally: a Lemon Squeezy profile IS an account (one API key per account; a machine may hold a live + a test-mode key). --profile is kept as a HIDDEN back-compat alias.",
+  "profile_flag": "account",
+  "profile_noun": "account",
+  "_completeness_comment": "api_method_total/api_method_source record the ENUMERATED full API surface (cliwright §0/§11) so spec-completeness.sh can prove the manifest wraps ~all of it, not a hand-picked subset. Source = the official SDK @lemonsqueezy/lemonsqueezy.js, whose exported API functions are the canonical, exhaustive method list for the Store API + License API (59 operations, excluding the client-only lemonSqueezySetup). The manifest's verbs map 1:1 to those functions.",
+  "api_method_total": 59,
+  "api_method_source": "official SDK github.com/lmsqueezy/lemonsqueezy.js exported API functions (Store API + License API), enumerated 2026-06",
   "resources": [
     { "name": "stores", "verbs": ["list", "get"], "read_only": true, "key_fields": ["id", "name", "slug", "currency", "total_sales"] },
     { "name": "products", "verbs": ["list", "get"], "read_only": true, "key_fields": ["id", "store_id", "name", "status", "price"] },

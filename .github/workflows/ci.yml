@@ -1,6 +1,10 @@
 # .github/workflows/ci.yml — copied into a generated CLI by cliwright (GOAL.md §6).
-# Key trap: use the prebuilt gosec ACTION, not `go install` of a pinned old scanner
-# (an old gosec/govulncheck won't compile under a newer Go toolchain).
+# Key trap: build the linters/scanners (golangci-lint, gosec, govulncheck) FROM SOURCE with
+# this job's Go via `go install ...@latest` — do NOT pin them and do NOT lean on the prebuilt
+# golangci-lint-action / gosec ACTION. The prebuilt binaries lag the Go toolchain (they target
+# an older Go and can't analyze a module that already moved to the next Go release) → errors
+# like "configuration contains invalid elements" / "invalid array length". Compiling @latest
+# here always matches the module's Go.
 name: CI
 on:
   push: { branches: [main, develop] }
@@ -27,6 +31,23 @@ jobs:
           golangci-lint run ./...
       - name: docs-gen drift check
         run: make docs-gen && git diff --exit-code -- docs/commands
+
+  # verify == the DETERMINISTIC acceptance gate (Makefile `verify`): check + spec-check +
+  # spec-completeness + cover-check + dod-check, no LLM judge. This is the single gate CI is
+  # anchored to; the granular jobs above/below stay for cross-OS + security signal.
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: stable }
+      # make verify runs `check` (golangci-lint) and dod-check.sh (ripgrep); install both.
+      - name: install gate tooling
+        run: |
+          go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+          sudo apt-get update && sudo apt-get install -y ripgrep
+      - name: make verify
+        run: make verify
 
   security:
     runs-on: ubuntu-latest
