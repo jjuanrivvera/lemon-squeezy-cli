@@ -1,5 +1,6 @@
 /bin/
 /dist/
+/site/
 /completions/*.bash
 /completions/*.zsh
 /completions/*.fish

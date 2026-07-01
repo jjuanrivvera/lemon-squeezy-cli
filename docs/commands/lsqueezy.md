@@ -7,31 +7,34 @@ A polished CLI for the Lemon Squeezy e-commerce API
 lsqueezy is a production-grade command-line interface for Lemon Squeezy.
 
 Manage stores, products, orders, subscriptions, customers, discounts, license keys,
-checkouts, and webhooks. Script it all with table/json/yaml/csv output, named profiles
-for multiple accounts, and a --dry-run that prints the equivalent curl.
+checkouts, and webhooks. Script it all with table/json/yaml/csv output, a --jq filter,
+named accounts for multiple keys, and a --dry-run that prints the equivalent curl.
 
 Examples:
   lsqueezy auth login --api-key eyJ0eX...
   lsqueezy stores list
   lsqueezy products list --filter store_id=1 --all
   lsqueezy orders get 12345 -o json
+  lsqueezy orders list -o json --jq '.[].total_formatted'
+  lsqueezy --account test subscriptions list
   lsqueezy subscriptions cancel 9999 --dry-run
   lsqueezy license validate --key 38b1460a-5104-4067-a91d-77b872934d51
 
 ### Options
 
 ```
+      --account string    named account to use (env LEMONSQUEEZY_ACCOUNT)
       --all               fetch all pages (list commands)
       --base-url string   override the API base URL
       --columns strings   comma-separated columns to show
       --dry-run           print the equivalent curl and make no request
       --filter strings    client-side field=value filters (list commands)
   -h, --help              help for lsqueezy
+      --jq string         gojq expression applied to the result before rendering
       --limit int         page size, 1-100 (list commands)
       --no-color          disable colored output
   -o, --output string     output format: table|json|yaml|csv
       --page int          page number, 1-based (list commands)
-      --profile string    config profile to use
       --quiet             suppress non-essential chatter
       --show-token        reveal the API key in dry-run output
       --sort string       JSON:API sort field, prefix with - for desc (list commands)
