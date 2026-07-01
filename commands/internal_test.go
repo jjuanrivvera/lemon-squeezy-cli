@@ -56,8 +56,11 @@ func TestMCPFlagAllowed(t *testing.T) {
 	pf := rootCmd.PersistentFlags()
 	assert.False(t, mcpFlagAllowed(pf.Lookup("show-token")))
 	assert.False(t, mcpFlagAllowed(pf.Lookup("base-url")))
+	// The account selector is excluded under BOTH its natural name and the hidden alias.
+	assert.False(t, mcpFlagAllowed(pf.Lookup("account")))
 	assert.False(t, mcpFlagAllowed(pf.Lookup("profile")))
 	assert.True(t, mcpFlagAllowed(pf.Lookup("output")))
+	assert.True(t, mcpFlagAllowed(pf.Lookup("jq")))
 }
 
 func TestMCPConfigSelectors(t *testing.T) {

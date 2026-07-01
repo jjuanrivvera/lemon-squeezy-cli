@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	// EnvPrefix namespaces env overrides, e.g. LEMONSQUEEZY_OUTPUT, LEMONSQUEEZY_PROFILE, LEMONSQUEEZY_BASE_URL.
+	// EnvPrefix namespaces env overrides, e.g. LEMONSQUEEZY_OUTPUT, LEMONSQUEEZY_ACCOUNT, LEMONSQUEEZY_BASE_URL.
 	EnvPrefix = "LEMONSQUEEZY"
 	// APIKeyEnv is the documented override for the API key (read by callers, not stored here).
 	APIKeyEnv = "LEMONSQUEEZY_API_KEY"
@@ -123,8 +123,12 @@ func (c *Config) ResolveOutput() string {
 	return "table"
 }
 
-// ResolveProfileName honors LEMONSQUEEZY_PROFILE over the file's active profile.
+// ResolveProfileName honors LEMONSQUEEZY_ACCOUNT (the natural env for the --account selector)
+// over the file's active profile, with LEMONSQUEEZY_PROFILE kept as a back-compat alias.
 func (c *Config) ResolveProfileName() string {
+	if v := os.Getenv(EnvPrefix + "_ACCOUNT"); v != "" {
+		return v
+	}
 	if v := os.Getenv(EnvPrefix + "_PROFILE"); v != "" {
 		return v
 	}

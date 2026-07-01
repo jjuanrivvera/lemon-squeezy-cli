@@ -57,6 +57,21 @@ func TestResolveProfileName_EnvOverride(t *testing.T) {
 	assert.Equal(t, "prod", c.ResolveProfileName())
 }
 
+func TestResolveProfileName_AccountEnvWins(t *testing.T) {
+	c, _ := Load(filepath.Join(t.TempDir(), "c.yaml"))
+	// LEMONSQUEEZY_ACCOUNT is the natural env for the --account selector and takes precedence
+	// over the legacy LEMONSQUEEZY_PROFILE alias.
+	t.Setenv("LEMONSQUEEZY_PROFILE", "legacy")
+	t.Setenv("LEMONSQUEEZY_ACCOUNT", "primary")
+	assert.Equal(t, "primary", c.ResolveProfileName())
+}
+
+func TestResolveProfileName_DefaultsToActive(t *testing.T) {
+	c, _ := Load(filepath.Join(t.TempDir(), "c.yaml"))
+	c.ActiveProfile = "work"
+	assert.Equal(t, "work", c.ResolveProfileName())
+}
+
 func TestUse_UnknownProfileErrors(t *testing.T) {
 	c, _ := Load(filepath.Join(t.TempDir(), "c.yaml"))
 	assert.Error(t, c.Use("ghost"))

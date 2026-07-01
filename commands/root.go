@@ -15,10 +15,19 @@ import (
 	"github.com/jjuanrivvera/lemon-squeezy-cli/internal/output"
 )
 
+// profileFlag/profileNoun name the multi-profile selector (cliwright manifest fields). A
+// Lemon Squeezy "profile" IS an account (one API key per account; a machine may hold a live
+// and a test-mode key), so the user-facing flag reads --account; --profile stays as a hidden
+// back-compat alias. Keep these in sync with api-manifest.json profile_flag/profile_noun.
+const (
+	profileFlag = "account"
+	profileNoun = "account"
+)
+
 // globalFlags holds the persistent flag values, resolved once in PersistentPreRunE.
 type globalFlags struct {
 	outputFormat string
-	profile      string
+	profile      string // the selected account/profile (bound to both --account and --profile)
 	baseURL      string
 	dryRun       bool
 	showToken    bool
@@ -26,6 +35,7 @@ type globalFlags struct {
 	noColor      bool
 	columns      []string
 	quiet        bool
+	jq           string
 
 	// list flags (registered globally so the generic builder can read them)
 	all    bool
@@ -45,14 +55,16 @@ var rootCmd = &cobra.Command{
 	Long: `lsqueezy is a production-grade command-line interface for Lemon Squeezy.
 
 Manage stores, products, orders, subscriptions, customers, discounts, license keys,
-checkouts, and webhooks. Script it all with table/json/yaml/csv output, named profiles
-for multiple accounts, and a --dry-run that prints the equivalent curl.
+checkouts, and webhooks. Script it all with table/json/yaml/csv output, a --jq filter,
+named accounts for multiple keys, and a --dry-run that prints the equivalent curl.
 
 Examples:
   lsqueezy auth login --api-key eyJ0eX...
   lsqueezy stores list
   lsqueezy products list --filter store_id=1 --all
   lsqueezy orders get 12345 -o json
+  lsqueezy orders list -o json --jq '.[].total_formatted'
+  lsqueezy --account test subscriptions list
   lsqueezy subscriptions cancel 9999 --dry-run
   lsqueezy license validate --key 38b1460a-5104-4067-a91d-77b872934d51`,
 	SilenceUsage:  true,
@@ -86,7 +98,14 @@ func Setup() *cobra.Command {
 func init() {
 	pf := rootCmd.PersistentFlags()
 	pf.StringVarP(&gf.outputFormat, "output", "o", "", "output format: table|json|yaml|csv")
-	pf.StringVar(&gf.profile, "profile", "", "config profile to use")
+	// The multi-profile selector is named per the API (profileFlag). Both --account and the
+	// legacy --profile target the same var, so existing scripts using --profile keep working;
+	// --profile is hidden so help shows only the natural name.
+	pf.StringVar(&gf.profile, profileFlag, "", "named "+profileNoun+" to use (env LEMONSQUEEZY_"+strings.ToUpper(profileNoun)+")")
+	if profileFlag != "profile" {
+		pf.StringVar(&gf.profile, "profile", "", "alias for --"+profileFlag)
+		_ = pf.MarkHidden("profile")
+	}
 	pf.StringVar(&gf.baseURL, "base-url", "", "override the API base URL")
 	pf.BoolVar(&gf.dryRun, "dry-run", false, "print the equivalent curl and make no request")
 	pf.BoolVar(&gf.showToken, "show-token", false, "reveal the API key in dry-run output")
@@ -94,6 +113,7 @@ func init() {
 	pf.BoolVar(&gf.noColor, "no-color", false, "disable colored output")
 	pf.StringSliceVar(&gf.columns, "columns", nil, "comma-separated columns to show")
 	pf.BoolVar(&gf.quiet, "quiet", false, "suppress non-essential chatter")
+	pf.StringVar(&gf.jq, "jq", "", "gojq expression applied to the result before rendering")
 
 	// List flags (read by the generic builder's list command).
 	pf.BoolVar(&gf.all, "all", false, "fetch all pages (list commands)")
@@ -103,7 +123,7 @@ func init() {
 	pf.StringSliceVar(&gf.filter, "filter", nil, "client-side field=value filters (list commands)")
 }
 
-// loadConfig loads the config file (honoring LEMONSQUEEZY_PROFILE/env) once per invocation.
+// loadConfig loads the config file (honoring LEMONSQUEEZY_ACCOUNT/env) once per invocation.
 func loadConfig() (*config.Config, error) {
 	return config.Load("")
 }
@@ -175,6 +195,7 @@ func outputOptions(cfg *config.Config) output.Options {
 		Format:  f,
 		Columns: normalizeColumns(gf.columns),
 		NoColor: gf.noColor,
+		JQ:      gf.jq,
 		Writer:  os.Stdout,
 	}
 }

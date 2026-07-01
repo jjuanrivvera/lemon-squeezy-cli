@@ -14,10 +14,12 @@ import (
 // its own rails (the `agent` guard).
 var excludedFromMCP = []string{"agent", "auth", "config", "alias", "init", "doctor", "completion"}
 
-// secretFlags must never be exposed as MCP tool inputs: they'd let an agent switch
-// instances or exfiltrate the key.
+// secretFlags must never be exposed as MCP tool inputs: they'd let an agent switch accounts
+// or exfiltrate the key. The account selector is excluded under BOTH its natural name
+// (profileFlag, e.g. "account") and the hidden "profile" alias, so neither can flip accounts.
 var secretFlags = map[string]bool{
 	"show-token": true,
+	profileFlag:  true,
 	"profile":    true,
 	"base-url":   true,
 	"api-key":    true,

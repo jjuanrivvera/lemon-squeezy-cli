@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/itchyny/gojq"
 	"gopkg.in/yaml.v3"
 )
 
@@ -46,6 +47,7 @@ type Options struct {
 	Format  Format
 	Columns []string // explicit column subset/order; empty = default for the format
 	NoColor bool
+	JQ      string // optional gojq expression applied to the value before rendering
 	Writer  io.Writer
 }
 
@@ -73,6 +75,20 @@ func Render(v any, defaultColumns []string, o Options) error {
 	if o.Writer == nil {
 		o.Writer = os.Stdout
 	}
+	// --jq runs BEFORE format selection so json/yaml/table/csv all render the filtered value.
+	// It's the last-mile transform an operator reaches for (e.g. `-o json --jq '.[].id'`).
+	if o.JQ != "" {
+		filtered, err := applyJQ(o.JQ, v)
+		if err != nil {
+			return err
+		}
+		v = filtered
+		// The resource's curated default columns describe its native shape; a jq expression
+		// reshapes the data, so table/csv must derive columns from the result itself (unless
+		// the user pinned --columns). Otherwise a projected {id,email} would still print the
+		// original id/status/... headers.
+		defaultColumns = nil
+	}
 	switch o.Format {
 	case FormatJSON, "":
 		return renderJSON(v, o.Writer)
@@ -84,6 +100,45 @@ func Render(v any, defaultColumns []string, o Options) error {
 		return renderTabular(v, defaultColumns, o, true)
 	default:
 		return fmt.Errorf("unsupported format %q", o.Format)
+	}
+}
+
+// applyJQ runs a gojq program over v and returns the combined result (the single output when
+// the program yields one, a slice when it yields many, nil when none). v is normalized to
+// plain JSON types first — gojq operates on map/slice/float64/string/bool/nil, not Go structs
+// or the resource's named types.
+func applyJQ(program string, v any) (any, error) {
+	q, err := gojq.Parse(program)
+	if err != nil {
+		return nil, fmt.Errorf("invalid --jq expression %q: %w", program, err)
+	}
+	b, err := json.Marshal(v)
+	if err != nil {
+		return nil, err
+	}
+	var norm any
+	if err := json.Unmarshal(b, &norm); err != nil {
+		return nil, err
+	}
+	iter := q.Run(norm)
+	var results []any
+	for {
+		out, ok := iter.Next()
+		if !ok {
+			break
+		}
+		if err, ok := out.(error); ok {
+			return nil, fmt.Errorf("--jq: %w", err)
+		}
+		results = append(results, out)
+	}
+	switch len(results) {
+	case 0:
+		return nil, nil
+	case 1:
+		return results[0], nil
+	default:
+		return results, nil
 	}
 }
 
