@@ -4,8 +4,8 @@
 
 A polished, production-grade command-line interface for [Lemon Squeezy](https://lemonsqueezy.com) —
 manage stores, products, orders, subscriptions, customers, discounts, license keys, checkouts,
-and webhooks, and script it all with table/json/yaml/csv output, named profiles, retries, and an
-MCP server for AI agents.
+and webhooks, and script it all with table/json/yaml/csv output, a `--jq` filter, named accounts,
+retries, and an MCP server for AI agents.
 
 Built with the [cliwright](https://github.com/jjuanrivvera/cliwright) playbook: a generic core
 with thin resources, secrets in the OS keyring, idempotent-only retries, and a `--dry-run` that
@@ -94,9 +94,18 @@ lsqueezy subscriptions list --filter status=active --all
 lsqueezy orders list --store-id 1 --limit 50 --sort -createdAt
 ```
 
-Global flags: `-o/--output` (table|json|yaml|csv), `--columns`, `--filter`, `--sort`,
-`--all`, `--limit`, `--page`, `--profile`, `--base-url`, `--dry-run`, `--show-token`,
+Global flags: `-o/--output` (table|json|yaml|csv), `--jq <expr>`, `--columns`, `--filter`,
+`--sort`, `--all`, `--limit`, `--page`, `--account`, `--base-url`, `--dry-run`, `--show-token`,
 `--no-color`, `--quiet`, `-v/--verbose`. Table color is on only for a TTY and honors `NO_COLOR`.
+
+`--jq` runs a built-in [gojq](https://github.com/itchyny/gojq) program over the result before
+it renders, in any format:
+
+```bash
+lsqueezy orders list -o json --jq '.[].id'
+lsqueezy orders list --jq '[.[] | {id, email: .user_email, total: .total_formatted}]'
+lsqueezy stores get 1 -o json --jq '.total_sales'
+```
 
 ## License keys (License API)
 
@@ -127,31 +136,50 @@ lsqueezy agent guard --host opencode
 ```
 
 The MCP surface excludes setup/secret commands (`auth`, `config`, `--api-key`, `--show-token`,
-`--profile`, `--base-url`) so an agent can't read the key or switch stores.
+`--account` and its hidden `--profile` alias, `--base-url`) so an agent can't read the key or
+switch accounts.
 
 ## Configuration & precedence
 
 `flag > env (LEMONSQUEEZY_*) > config file > default`. Config lives at
 `$XDG_CONFIG_HOME/lemon-squeezy-cli/config.yaml` (or `~/.lemon-squeezy-cli/config.yaml`). The API
 key is stored in the OS keyring (with an encrypted-file fallback for headless boxes), never in the
-config file. Named profiles let one machine hold several accounts (e.g. a live key and a
-test-mode key): `lsqueezy --profile test orders list`.
+config file. A profile is an account, so the selector is `--account`: one machine can hold several
+keys (e.g. a live key and a test-mode key) and switch between them —
+`lsqueezy --account test orders list` (or `LEMONSQUEEZY_ACCOUNT=test`). `--profile` still works as
+a hidden back-compat alias.
 
 ## Development
 
 ```bash
 make build      # build bin/lsqueezy
 make check      # fmt + vet + lint + test (local gate)
-make verify     # full acceptance gate (check + spec-check + cover-check + dod + judge)
+make verify     # DETERMINISTIC gate: check + spec-check + spec-completeness + cover-check + dod
+make judge      # LLM-scored subjective gate (needs claude/codex; not part of verify)
+make accept     # full acceptance: verify + judge
+make docs-build # regenerate the CLI reference and build the docs site (mkdocs, strict)
 make setup-hooks
 ```
 
-## Roadmap / Pending
+`make verify` is the token-free gate CI runs; `make judge` adds the one non-deterministic LLM
+check, and `make accept` is both together (the build-acceptance gate).
 
-- **Docs site** — `make docs-build` calls `mkdocs build`, but there's no `mkdocs.yml`, so it
-  fails today. Needs the MkDocs config plus getting-started and user-guide pages.
-- **`--jq` output filter** — not implemented yet.
-- **Tests** — deepen the `httptest` mock coverage.
+## Docs site
+
+The documentation is [MkDocs](https://www.mkdocs.org/) (Material theme). `make docs-gen`
+regenerates the per-command reference from the live CLI into `docs/commands/`, and
+`make docs-build` builds the whole site (getting-started + user-guide + command reference).
+
+## Roadmap
+
+Everything below is now shipped:
+
+- [x] **Docs site** — `mkdocs.yml` + getting-started and user-guide pages; `make docs-build` passes.
+- [x] **`--jq` output filter** — a global `--jq <expr>` (gojq) filters the result before rendering.
+- [x] **API completeness** — the manifest wraps the full Lemon Squeezy API (Store + License API),
+  enumerated against the official SDK (59/59 methods; enforced by `make spec-completeness`).
+- [x] **Deeper tests** — broadened the `httptest` mock coverage across the resource set (≥80% gate).
+- [x] **Per-account selector** — `--account` (with `--profile` kept as a hidden alias).
 
 ## License
 

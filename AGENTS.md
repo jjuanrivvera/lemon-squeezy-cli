@@ -26,8 +26,12 @@ cliwright playbook. This file orients any AI agent working in the repo.
 
 - `make build` — build `bin/lsqueezy`.
 - `make check` — fmt + vet + lint + test (local gate).
-- `make verify` — full acceptance gate (check + spec-check + cover-check + dod-check + judge).
-  Set `CLIWRIGHT_SKIP_JUDGE=1` to skip the LLM judge in CI environments without an agent.
+- `make verify` — the DETERMINISTIC gate: check + spec-check + spec-completeness + cover-check +
+  dod-check. No LLM/tokens; this is what CI runs.
+- `make judge` — the ONE non-deterministic gate (an LLM scores the subjective DoD items). Needs
+  `claude`/`codex`; run it only at build-acceptance time. `CLIWRIGHT_SKIP_JUDGE=1` bypasses it.
+- `make accept` — full build-acceptance gate = `verify` + `judge`.
+- `make docs-build` — regenerate the command reference and build the MkDocs site (strict).
 
 ## Rules
 
@@ -35,4 +39,8 @@ cliwright playbook. This file orients any AI agent working in the repo.
 - Never print or commit a real token; redact by default.
 - Wire `cmd.Context()` from `ExecuteContext` everywhere — no stray `context.Background()`.
 - Annotate resource commands (read-only/write/destructive) in the generic builder.
-- Keep the CLI surface in sync with `api-manifest.json` (enforced by `make spec-check`).
+- Keep the CLI surface in sync with `api-manifest.json` — `make spec-check` enforces the surface
+  is a subset of the manifest (consistency), and `make spec-completeness` enforces the manifest
+  wraps ≥90% of the enumerated full API (completeness; `api_method_total`/`api_method_source`).
+- The multi-account selector is `--account` (manifest `profile_flag`/`profile_noun`); `--profile`
+  is a hidden back-compat alias. `--jq <expr>` (gojq) filters the result before rendering.

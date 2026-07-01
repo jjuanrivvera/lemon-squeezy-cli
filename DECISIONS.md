@@ -44,9 +44,34 @@ One line each: question → decision → why. Read these back before changing th
 
 ## Coverage methodology
 
-- **Coverage is measured with `-coverpkg=./...`.** The suite is integration-heavy
+- **Coverage is measured with `-coverpkg=./...` and `-count=1`.** The suite is integration-heavy
   (`commands_test` drives the resources + api code paths end-to-end via httptest), so total
-  coverage credits that exercise. The ≥80% gate is genuinely met by real tests, not loosened.
+  coverage credits that exercise. `-count=1` is required: with `-coverpkg`, a cached test result
+  merges into the profile wrong and under-reports the total, which would flake `cover-check`. The
+  ≥80% gate is genuinely met by real tests, not loosened.
+
+## API completeness (cliwright §0/§11)
+
+- **The manifest wraps the FULL Lemon Squeezy API.** `api_method_total`/`api_method_source`
+  record the enumerated surface — the official SDK `@lemonsqueezy/lemonsqueezy.js`
+  (github.com/lmsqueezy/lemonsqueezy.js), whose exported API functions are the canonical,
+  exhaustive method list for the Store API + License API: **59 operations** (excluding the
+  client-only `lemonSqueezySetup`). The manifest's verbs map 1:1 to those functions, so
+  `spec-completeness.sh` reports **59/59 = 100%** — no coverage-waiver needed.
+
+## Multi-account selector (cliwright v0.3.0)
+
+- **The profile flag is `--account`** (`profile_flag`/`profile_noun` = `account`). A Lemon
+  Squeezy profile IS an account — one API key; a machine may hold a live + a test-mode key.
+  `--profile` (and `LEMONSQUEEZY_PROFILE`) stay as HIDDEN back-compat aliases, and the account
+  selector is excluded from the MCP surface under BOTH names so an agent can't switch accounts.
+
+## Gate structure (cliwright v0.3.0)
+
+- **`verify` is deterministic; `judge` is separate.** `make verify` = check + spec-check +
+  spec-completeness + cover-check + dod-check (no LLM, token-free, CI-safe). `make judge` is the
+  ONE non-deterministic gate (an LLM scores subjective DoD items). `make accept` = verify + judge
+  is the build-acceptance gate. CI is anchored on `make verify`.
 
 ## Binary identity
 

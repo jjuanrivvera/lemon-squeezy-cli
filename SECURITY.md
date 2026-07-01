@@ -20,4 +20,5 @@ for security reports. We aim to acknowledge within 72 hours.
   Windows Credential Manager), never in the config file or repository.
 - The `LEMONSQUEEZY_API_KEY` environment variable overrides stored credentials.
 - `--dry-run` and `config view` redact the key by default; pass `--show-token` to reveal it.
-- The MCP tool surface excludes `--api-key`, `--show-token`, `--profile`, and `--base-url`.
+- The MCP tool surface excludes `--api-key`, `--show-token`, `--account` (and its hidden
+  `--profile` alias), and `--base-url`.

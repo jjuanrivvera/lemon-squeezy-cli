@@ -19,11 +19,11 @@ never in the config file or repo.
 ### Test mode vs live
 
 Lemon Squeezy distinguishes test and live data by the **kind of API key**, not the URL. Use a
-separate profile per key:
+separate account per key (`--account`; `--profile` is a hidden alias):
 
 ```bash
-lsqueezy --profile test auth login --api-key <test-key>
-lsqueezy --profile test orders list
+lsqueezy --account test auth login --api-key <test-key>
+lsqueezy --account test orders list
 ```
 
 ## Configuration precedence
@@ -35,7 +35,7 @@ lsqueezy --profile test orders list
 | API key    | (keyring)    | `LEMONSQUEEZY_API_KEY`  | (never stored)  |
 | Base URL   | `--base-url` | `LEMONSQUEEZY_BASE_URL` | `base_url`      |
 | Output     | `-o`         | `LEMONSQUEEZY_OUTPUT`   | `output`        |
-| Profile    | `--profile`  | `LEMONSQUEEZY_PROFILE`  | `active_profile`|
+| Account    | `--account`  | `LEMONSQUEEZY_ACCOUNT`  | `active_profile`|
 
 Config lives at `$XDG_CONFIG_HOME/lemon-squeezy-cli/config.yaml` (or
 `~/.lemon-squeezy-cli/config.yaml`), written `0600` in a `0700` dir.

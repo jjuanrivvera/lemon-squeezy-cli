@@ -7,6 +7,24 @@ All notable changes to this project are documented here. The format is based on
 ## [Unreleased]
 
 ### Added
+- Global `--jq <expr>` filter: runs a built-in [gojq](https://github.com/itchyny/gojq) program
+  over the result before rendering, in any output format.
+- MkDocs (Material) documentation site: getting-started + user-guide pages and an
+  auto-generated command reference; `make docs-build` builds it (strict).
+- `spec-completeness` gate: `api_method_total`/`api_method_source` in `api-manifest.json`
+  enumerate the full Lemon Squeezy API (59 methods, from the official SDK); the manifest wraps
+  100% of it.
+
+### Changed
+- The multi-account selector is now `--account` (env `LEMONSQUEEZY_ACCOUNT`); `--profile`
+  (and `LEMONSQUEEZY_PROFILE`) remain as hidden back-compat aliases. Both are excluded from
+  the MCP tool surface.
+- Split the acceptance gate: `make verify` is deterministic (check + spec-check +
+  spec-completeness + cover-check + dod, no LLM), `make judge` is the LLM gate, and
+  `make accept` = verify + judge. CI is anchored on `make verify`.
+- Deepened the `httptest` mock coverage across the resource set.
+
+### Added — initial release surface
 - Initial CLI for the Lemon Squeezy API covering 18 JSON:API resources (stores, products,
   variants, prices, files, customers, orders, order-items, subscriptions, subscription-items,
   subscription-invoices, usage-records, discounts, discount-redemptions, license-keys,
