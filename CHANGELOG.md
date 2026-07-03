@@ -6,7 +6,16 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-02
+
 ### Added
+- **`agent guard` now generates a real PreToolUse enforcement hook** (Bash + MCP
+  matchers) instead of only permission deny/ask rules. The hook anchors blocked
+  subcommands at the command position, matches path-invoked binaries
+  (`./bin/lsqueezy`, `/usr/local/bin/lsqueezy`) while ignoring a different binary
+  that merely ends in `lsqueezy`, defeats quote/backslash/newline obfuscation and
+  separators glued to a verb, and blocks `api DELETE/PUT/POST/PATCH` at the
+  method position (a `GET` whose path contains `delete` stays allowed).
 - Global `--jq <expr>` filter: runs a built-in [gojq](https://github.com/itchyny/gojq) program
   over the result before rendering, in any output format.
 - MkDocs (Material) documentation site: getting-started + user-guide pages and an
@@ -23,6 +32,12 @@ All notable changes to this project are documented here. The format is based on
   spec-completeness + cover-check + dod, no LLM), `make judge` is the LLM gate, and
   `make accept` = verify + judge. CI is anchored on `make verify`.
 - Deepened the `httptest` mock coverage across the resource set.
+
+### Fixed
+- `agent guard` Codex and OpenCode output now emit the config schemas those hosts
+  actually read (previously an invented `[sandbox]` table and a plural
+  `permissions` key were silently ignored), and `--write` now writes the files
+  instead of being a silent no-op. The no-jq hook fallback no longer fails open.
 
 ### Added — initial release surface
 - Initial CLI for the Lemon Squeezy API covering 18 JSON:API resources (stores, products,
