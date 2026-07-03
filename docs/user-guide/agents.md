@@ -43,3 +43,28 @@ Read verbs (`list`, `get`, `current-usage`) are allowed, writes (`create`, `upda
 require approval, and irreversible verbs (`refund`, `cancel`, `delete`, `deactivate`) are hard
 blocked. Custom verbs are treated as destructive unless a resource marks them read-only, so a
 new command is safe by default.
+
+For `claude-code` the output includes two files: `.claude/settings.json` (permission rules
+plus `PreToolUse` hook wiring) and `.claude/hooks/lsqueezy-guard.sh`. Pass `--write` to
+install them under the project root (existing files are never overwritten). The hook exists
+because permission rules are literal prefix patterns — on their own they would not catch a
+path-invoked binary (`./bin/lsqueezy orders refund`), quote obfuscation
+(`lsqueezy orders re""fund`), or a blocked command chained after `;`/`|`/`&&`. The hook
+re-checks every Bash command with anchored command-position matching (an optional
+`([^[:space:]]*/)?` path prefix covers `./bin/lsqueezy` and `/usr/local/bin/lsqueezy`) and
+hard-blocks blocked MCP tools by exact name.
+
+The `lsqueezy api` escape hatch requires approval as a whole, and its destructive HTTP
+methods (`DELETE`/`PUT`/`POST`/`PATCH` — the method is the first positional argument) are
+hard-blocked on the Bash surface. A `GET` whose path merely contains a word like `refund`
+is not blocked.
+
+### Known limitations (by design)
+
+- **Variable indirection and shell aliases are not defeated** (`a=refund; lsqueezy orders
+  $a 1`). For a hard guarantee run the agent MCP-only (no Bash tool) or in a read-only
+  sandbox — the MCP branch of the hook is an exact tool-name match and cannot be obfuscated.
+- **Conservative false positives deny, never allow**: a quoted full blocked command inside
+  another program's arguments (e.g. `rg "lsqueezy orders refund" src/`) is denied because
+  de-obfuscation strips quotes before matching. The failure direction is safe.
+- Regenerate the config after upgrading `lsqueezy` so newly added commands are covered.

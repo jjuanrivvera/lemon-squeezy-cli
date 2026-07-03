@@ -7,8 +7,18 @@ Emit host safety config that blocks destructive ops for an agent driving lsqueez
 Classify every lsqueezy command (read / write / irreversible) using the same
 annotations the MCP server uses, then emit safety config for the chosen agent host.
 
-Reads are left free, writes require approval, and irreversible verbs (delete) are blocked.
-Because it derives from the live tree, it stays correct as resources are added.
+Reads are left free, writes require approval, and irreversible verbs (refund, cancel,
+delete, deactivate) are blocked. Because it derives from the live tree, it stays correct
+as resources are added.
+
+For claude-code the output includes a PreToolUse hook script alongside the permission
+rules: permission rules are literal prefix patterns, so on their own they can be
+sidestepped by path-invoking the binary (./bin/lsqueezy ...) or quote obfuscation. The
+hook re-checks every Bash command (anchored command-position matching, de-obfuscation)
+and hard-blocks blocked lsqueezy MCP tools by exact name. The "lsqueezy api" escape
+hatch is blocked for DELETE/PUT/POST/PATCH at the method position; variable indirection
+and shell aliases are NOT defeated — run MCP-only or in a read-only sandbox for a hard
+guarantee.
 
 ```
 lsqueezy agent guard [flags]
