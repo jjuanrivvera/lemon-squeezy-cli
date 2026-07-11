@@ -16,6 +16,9 @@ relationships.
 ## Install
 
 ```bash
+# Install script (macOS/Linux) — downloads the release binary, verifies its checksum
+curl -fsSL https://raw.githubusercontent.com/jjuanrivvera/lemon-squeezy-cli/main/install.sh | sh
+
 # Homebrew (tap)
 brew install jjuanrivvera/lemon-squeezy-cli/lemon-squeezy-cli
 
