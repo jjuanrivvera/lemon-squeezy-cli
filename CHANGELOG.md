@@ -6,6 +6,18 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-07-11
+
+### Fixed
+- `auth login` and `init` now read the API key with a **hidden** prompt (`term.ReadPassword`)
+  instead of `fmt.Scanln`, which echoed the key in plaintext and could hang on long terminal
+  pastes (Lemon Squeezy keys are long JWTs). The key is no longer shown on screen, and the
+  read no longer stalls.
+
+### Added
+- One-line install script (`install.sh`) for macOS/Linux, checksum-verified:
+  `curl -fsSL https://raw.githubusercontent.com/jjuanrivvera/lemon-squeezy-cli/main/install.sh | sh`.
+
 ## [0.2.0] - 2026-07-02
 
 ### Added

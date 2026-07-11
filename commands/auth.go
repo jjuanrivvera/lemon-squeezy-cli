@@ -32,8 +32,8 @@ func authLoginCmd() *cobra.Command {
 			}
 			profile := activeProfileName(cfg)
 			if apiKey == "" {
-				fmt.Print("Enter your Lemon Squeezy key: ")
-				if _, err := fmt.Scanln(&apiKey); err != nil {
+				apiKey, err = promptSecret("Enter your Lemon Squeezy key (hidden): ")
+				if err != nil {
 					return fmt.Errorf("read key: %w", err)
 				}
 			}
