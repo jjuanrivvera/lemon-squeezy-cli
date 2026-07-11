@@ -1,6 +1,6 @@
 # lsqueezy
 
-> 🏭 Built with [cliwright](https://github.com/jjuanrivvera/cliwright) — a spec-gated CLI factory.
+> 🏭 Part of the [cliwright](https://cliwright.jjuanrivvera.com) CLI fleet.
 
 A polished, production-grade command-line interface for [Lemon Squeezy](https://lemonsqueezy.com) —
 manage stores, products, orders, subscriptions, customers, discounts, license keys, checkouts,
@@ -109,10 +109,6 @@ lsqueezy orders list -o json --jq '.[].id'
 lsqueezy orders list --jq '[.[] | {id, email: .user_email, total: .total_formatted}]'
 lsqueezy stores get 1 -o json --jq '.total_sales'
 ```
-
-## Built with cliwright
-
-Part of a fleet of single-purpose CLIs generated with [cliwright](https://cliwright.jjuanrivvera.com) — browse them all at **[cliwright.jjuanrivvera.com](https://cliwright.jjuanrivvera.com)**.
 
 ## License keys (License API)
 
