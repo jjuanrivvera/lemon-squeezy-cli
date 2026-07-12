@@ -6,6 +6,17 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-07-12
+
+### Security
+- Bump the Go toolchain to **go1.25.12**, clearing the reachable standard-library advisories
+  (crypto/tls GO-2026-5856, crypto/x509, net/http, net/textproto) that govulncheck flagged.
+
+### Changed
+- Extract `scanSecretLine` from `readSecretRaw` so the raw-mode secret prompt's byte handling is
+  unit-tested (long paste, Backspace, Ctrl-C, EOF), matching the cliwright template. No behavior
+  change.
+
 ## [0.2.3] - 2026-07-12
 
 ### Fixed

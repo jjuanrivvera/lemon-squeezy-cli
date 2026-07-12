@@ -3,6 +3,7 @@ package commands
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -20,9 +21,8 @@ import (
 // line-length limit, so long pasted keys read cleanly.
 func promptSecret(prompt string) (string, error) {
 	fmt.Fprint(os.Stderr, prompt)
-	fd := int(os.Stdin.Fd())
-	if term.IsTerminal(fd) {
-		s, err := readSecretRaw(fd)
+	if term.IsTerminal(int(os.Stdin.Fd())) {
+		s, err := readSecretRaw(os.Stdin)
 		fmt.Fprintln(os.Stderr) // raw mode doesn't echo the Enter; end the prompt line
 		if err != nil {
 			return "", err
@@ -36,19 +36,25 @@ func promptSecret(prompt string) (string, error) {
 	return sanitizeSecret(line), nil
 }
 
-// readSecretRaw reads one line from the terminal in raw, no-echo mode, until CR or LF, with no
-// line-length limit (unlike canonical mode's MAX_CANON). Ctrl-C cancels; Backspace/DEL edits.
-func readSecretRaw(fd int) (string, error) {
+// readSecretRaw puts the terminal in raw, no-echo mode (no line-length limit, unlike canonical
+// mode's MAX_CANON) and reads one line. On a pipe MakeRaw fails, so the caller falls back.
+func readSecretRaw(f *os.File) (string, error) {
+	fd := int(f.Fd())
 	oldState, err := term.MakeRaw(fd)
 	if err != nil {
 		return "", err
 	}
 	defer func() { _ = term.Restore(fd, oldState) }()
+	return scanSecretLine(f)
+}
 
+// scanSecretLine reads bytes until CR/LF with no line-length limit. Ctrl-C cancels; Backspace/DEL
+// edits. Split out so the byte handling is testable without a real terminal.
+func scanSecretLine(r io.Reader) (string, error) {
 	var buf []byte
 	chunk := make([]byte, 256)
 	for {
-		n, readErr := os.Stdin.Read(chunk)
+		n, readErr := r.Read(chunk)
 		for i := 0; i < n; i++ {
 			switch c := chunk[i]; c {
 			case '\r', '\n':
