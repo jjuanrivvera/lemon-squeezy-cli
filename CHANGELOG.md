@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-07-11
+
+### Fixed
+- `auth login` / `init` now strip terminal **bracketed-paste** markers (`ESC[200~ … ESC[201~`)
+  from the hidden key prompt. With bracketed paste enabled, a raw read (unlike the shell's line
+  editor) receives those wrappers and left them in the key — so a **valid** pasted key failed with
+  `HTTP 401` (typing worked, pasting didn't). Pasted keys now authenticate. Regression from 0.2.1,
+  which moved the prompt to `term.ReadPassword`.
+
 ## [0.2.1] - 2026-07-11
 
 ### Fixed
