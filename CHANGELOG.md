@@ -6,6 +6,16 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-07-12
+
+### Fixed
+- `auth login` / `init` no longer **hang** (needing Ctrl-C) when you paste a long API key. The
+  hidden prompt used `term.ReadPassword`, which reads in *canonical* mode — capped at `MAX_CANON`
+  (1024 chars on macOS). A Lemon Squeezy key is a ~970-char JWT, right at that edge, so the paste
+  filled the terminal's line buffer and blocked. The prompt now reads in **raw mode**, which has
+  no line-length limit, so long keys paste cleanly. (0.2.2's bracketed-paste stripping was the
+  wrong cause — kept as a harmless guard, but this is the real fix.)
+
 ## [0.2.2] - 2026-07-11
 
 ### Fixed
