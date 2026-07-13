@@ -1,102 +1,19 @@
-# .github/workflows/ci.yml — copied into a generated CLI by cliwright (GOAL.md §6).
-# Key trap: build the linters/scanners (golangci-lint, gosec, govulncheck) FROM SOURCE with
-# this job's Go via `go install ...@latest` — do NOT pin them and do NOT lean on the prebuilt
-# golangci-lint-action / gosec ACTION. The prebuilt binaries lag the Go toolchain (they target
-# an older Go and can't analyze a module that already moved to the next Go release) → errors
-# like "configuration contains invalid elements" / "invalid array length". Compiling @latest
-# here always matches the module's Go.
+# CI — delegates to the fleet-canonical reusable workflow in jjuanrivvera/.github.
+# Change fleet-wide CI policy there, not here. Repo-specific inputs only live below.
 name: CI
+
 on:
-  push: { branches: [main, develop] }
+  push:
+    branches: [main, develop]
   pull_request:
 
-permissions: { contents: read }
+permissions:
+  contents: read
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with: { go-version: stable }
-      - run: gofmt -l . | tee /dev/stderr | (! read)
-      - run: go vet ./...
-      # Build golangci-lint v2 from source with THIS job's Go (stable): the prebuilt action
-      # binary lags Go releases and refuses to run when go.mod targets a newer Go than it was
-      # built with, and the action's goinstall mode resolves the v1 module path (which rejects
-      # a v2 config). Source-building from the /v2 path avoids both.
-      - name: golangci-lint
-        run: |
-          go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
-          golangci-lint run ./...
-      - name: docs-gen drift check
-        run: make docs-gen && git diff --exit-code -- docs/commands
-
-  # verify == the DETERMINISTIC acceptance gate (Makefile `verify`): check + spec-check +
-  # spec-completeness + cover-check + dod-check, no LLM judge. This is the single gate CI is
-  # anchored to; the granular jobs above/below stay for cross-OS + security signal.
-  verify:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with: { go-version: stable }
-      # make verify runs `check` (golangci-lint) and dod-check.sh (ripgrep); install both.
-      - name: install gate tooling
-        run: |
-          go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
-          sudo apt-get update && sudo apt-get install -y ripgrep
-      - name: make verify
-        run: make verify
-
-  security:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with: { go-version: stable }
-      - name: govulncheck (blocking)
-        run: |
-          go install golang.org/x/vuln/cmd/govulncheck@latest
-          govulncheck ./...
-      # Build gosec from source with this job's Go — the pinned gosec Docker image ships an
-      # older Go (GOTOOLCHAIN=local) that can't load a module whose go directive is newer.
-      # @latest built with the current toolchain compiles fine (the trap is only OLD pins).
-      - name: gosec (high-severity gate)
-        run: |
-          go install github.com/securego/gosec/v2/cmd/gosec@latest
-          gosec -severity high -confidence medium ./...
-
-  test:
-    strategy:
-      matrix: { os: [ubuntu-latest, macos-latest, windows-latest] }
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with: { go-version: stable }
-      # -coverpkg=./... credits cross-package integration tests (commands_test drives the
-      # resources + api code), matching the Makefile's methodology — without it the gate
-      # measures only same-package coverage and undercounts.
-      - run: go test -race ./... -coverpkg=./... -coverprofile=coverage.out
-      - name: coverage gate (ubuntu only)
-        if: matrix.os == 'ubuntu-latest'
-        run: ./scripts/cover-check.sh 80
-      - if: matrix.os == 'ubuntu-latest'
-        uses: codecov/codecov-action@v4
-
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with: { go-version: stable }
-      # syft must be on PATH for the SBOM step; the snapshot exercises the real release path
-      # (archives + nfpm + sbom), only skipping sign (needs OIDC) and docker.
-      - uses: anchore/sbom-action/download-syft@v0
-      - uses: goreleaser/goreleaser-action@v6
-        with: { args: check }
-      - uses: goreleaser/goreleaser-action@v6
-        with: { args: release --snapshot --clean --skip=sign,docker }
-        env:
-          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+  ci:
+    uses: jjuanrivvera/.github/.github/workflows/go-ci.yml@main
+    with:
+      coverage-threshold: "80"
+      run-gosec: true
+      run-docs-check: true
