@@ -15,5 +15,6 @@ jobs:
     uses: jjuanrivvera/.github/.github/workflows/go-ci.yml@main
     with:
       coverage-threshold: "80"
+      coverpkg: true   # coverage relies on commands_test integration tests hitting internal/api
       run-gosec: true
       run-docs-check: true
