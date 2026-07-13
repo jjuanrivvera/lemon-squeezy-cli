@@ -1,6 +1,23 @@
+<div align="center">
+
 # lsqueezy
 
-> 🏭 Part of the [cliwright](https://cliwright.jjuanrivvera.com) CLI fleet.
+[![CI](https://github.com/jjuanrivvera/lemon-squeezy-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/jjuanrivvera/lemon-squeezy-cli/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/jjuanrivvera/lemon-squeezy-cli)](https://github.com/jjuanrivvera/lemon-squeezy-cli/releases/latest)
+[![Coverage](https://img.shields.io/badge/coverage-%E2%89%A580%25-brightgreen)](https://github.com/jjuanrivvera/lemon-squeezy-cli/actions/workflows/ci.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/jjuanrivvera/lemon-squeezy-cli.svg)](https://pkg.go.dev/github.com/jjuanrivvera/lemon-squeezy-cli)
+[![Go version](https://img.shields.io/github/go-mod/go-version/jjuanrivvera/lemon-squeezy-cli)](go.mod)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/jjuanrivvera/lemon-squeezy-cli)
+[![Built with cliwright](https://img.shields.io/badge/built_with-cliwright-1f6feb)](https://cliwright.jjuanrivvera.com)
+
+**A production-grade CLI for the [Lemon Squeezy](https://lemonsqueezy.com) API — stores, products, orders, subscriptions, customers, discounts, and license keys.**
+
+[Documentation](https://jjuanrivvera.github.io/lemon-squeezy-cli/) · [Commands](https://jjuanrivvera.github.io/lemon-squeezy-cli/commands/)
+
+</div>
+
+---
 
 A polished, production-grade command-line interface for [Lemon Squeezy](https://lemonsqueezy.com) —
 manage stores, products, orders, subscriptions, customers, discounts, license keys, checkouts,
