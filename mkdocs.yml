@@ -57,3 +57,8 @@ nav:
       - Creating & Updating: user-guide/writing-data.md
       - AI Agents (MCP & Guard): user-guide/agents.md
   - Command Reference: commands/index.md
+
+extra:
+  analytics:
+    provider: google
+    property: G-9HY9P7C366
