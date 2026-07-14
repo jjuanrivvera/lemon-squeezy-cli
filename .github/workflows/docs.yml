@@ -11,6 +11,9 @@ on:
 permissions:
   contents: write   # gh-pages push
 
+env:
+  GOOGLE_ANALYTICS_KEY: ${{ vars.GOOGLE_ANALYTICS_KEY }}
+
 jobs:
   docs:
     runs-on: ubuntu-latest
