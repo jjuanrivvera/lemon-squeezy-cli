@@ -13,6 +13,13 @@ import (
 )
 
 func init() {
+	rootCmd.AddCommand(newUpdateCmd())
+}
+
+// newUpdater builds the self-updater; a package var so tests can point it at a stub server.
+var newUpdater = update.NewUpdater
+
+func newUpdateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update",
 		Short: "Update lsqueezy to the latest GitHub release",
@@ -24,7 +31,7 @@ installing.`,
 			ctx, cancel := context.WithTimeout(cmd.Context(), 60*time.Second)
 			defer cancel()
 
-			res := update.NewUpdater(version.Version).CheckAndUpdate(ctx)
+			res := newUpdater(version.Version).CheckAndUpdate(ctx)
 			if res.Error != nil {
 				return res.Error
 			}
@@ -45,7 +52,7 @@ installing.`,
 			ctx, cancel := context.WithTimeout(cmd.Context(), 60*time.Second)
 			defer cancel()
 
-			rel, err := update.NewUpdater(version.Version).GetLatestRelease(ctx)
+			rel, err := newUpdater(version.Version).GetLatestRelease(ctx)
 			if err != nil {
 				return err
 			}
@@ -65,5 +72,5 @@ installing.`,
 	annotate(check, annReadOnly)
 	cmd.AddCommand(check)
 
-	rootCmd.AddCommand(cmd)
+	return cmd
 }

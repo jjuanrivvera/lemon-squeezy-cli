@@ -27,6 +27,7 @@ Auto-generated from the CLI (`make docs-gen`). Start at the root command, [`lsqu
 - [`subscription-invoices`](lsqueezy_subscription-invoices.md) — Browse subscription invoices; refund and invoice
 - [`subscription-items`](lsqueezy_subscription-items.md) — Manage subscription items
 - [`subscriptions`](lsqueezy_subscriptions.md) — Manage subscriptions
+- [`update`](lsqueezy_update.md) — Update lsqueezy to the latest GitHub release
 - [`usage-records`](lsqueezy_usage-records.md) — Browse and create usage records
 - [`users`](lsqueezy_users.md) — The authenticated user (read-only)
 - [`variants`](lsqueezy_variants.md) — Browse product variants (read-only)

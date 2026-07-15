@@ -68,6 +68,7 @@ Examples:
 * [lsqueezy subscription-invoices](lsqueezy_subscription-invoices.md)	 - Browse subscription invoices; refund and invoice
 * [lsqueezy subscription-items](lsqueezy_subscription-items.md)	 - Manage subscription items
 * [lsqueezy subscriptions](lsqueezy_subscriptions.md)	 - Manage subscriptions
+* [lsqueezy update](lsqueezy_update.md)	 - Update lsqueezy to the latest GitHub release
 * [lsqueezy usage-records](lsqueezy_usage-records.md)	 - Browse and create usage records
 * [lsqueezy users](lsqueezy_users.md)	 - The authenticated user (read-only)
 * [lsqueezy variants](lsqueezy_variants.md)	 - Browse product variants (read-only)

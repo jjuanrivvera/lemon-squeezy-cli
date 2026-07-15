@@ -56,15 +56,28 @@ type Updater struct {
 	CurrentVersion string
 	HTTPClient     *http.Client
 	ExecutablePath string // overridable for tests
+	baseURL        string // GitHub API base; empty = the real API. Overridable in tests.
 }
 
 func NewUpdater(currentVersion string) *Updater {
 	return &Updater{CurrentVersion: currentVersion, HTTPClient: &http.Client{Timeout: 30 * time.Second}}
 }
 
+// NewUpdaterWithBaseURL is NewUpdater with a custom GitHub API base URL. It exists so the
+// `update` command is testable against an httptest server; pass "" for the real API.
+func NewUpdaterWithBaseURL(currentVersion, baseURL string) *Updater {
+	u := NewUpdater(currentVersion)
+	u.baseURL = baseURL
+	return u
+}
+
 // GetLatestRelease fetches the newest non-draft release.
 func (u *Updater) GetLatestRelease(ctx context.Context) (*Release, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", githubOwner, githubRepo)
+	base := u.baseURL
+	if base == "" {
+		base = "https://api.github.com"
+	}
+	url := fmt.Sprintf("%s/repos/%s/%s/releases/latest", base, githubOwner, githubRepo)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
