@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Fixed
+- MCP tools now carry the hint keys ophis actually reads (`readOnlyHint`, `destructiveHint`,
+  `openWorldHint`). Commands were classified correctly all along, but only under the internal
+  `mcp.*` keys, so every tool exported `annotations: null` and hosts enforcing a read-only
+  session dropped the whole server. 39 of 63 tools are now marked read-only. The agent guard
+  is unaffected — it still buckets on the internal keys.
+
 ## [0.2.4] - 2026-07-12
 
 ### Security
