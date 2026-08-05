@@ -5,14 +5,17 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/njayp/ophis"
 	"github.com/spf13/cobra"
 
 	"github.com/jjuanrivvera/lemon-squeezy-cli/internal/api"
 )
 
-// MCP annotation keys (ophis-compatible hints). Set once here so every resource command is
-// classified read-only/write/destructive without per-command edits — this drives both the
-// MCP tool surface and the agent guard.
+// Internal classification keys. Set once here so every resource command is classified
+// read-only/write/destructive without per-command edits; the agent guard buckets on these.
+//
+// These are NOT the keys ophis reads — annotate translates them to the singular MCP hint
+// keys, which is what actually reaches the exported tool list. See annotate.
 const (
 	annReadOnly    = "mcp.readOnly"
 	annWrite       = "mcp.write"
@@ -362,11 +365,27 @@ func buildDeleteCmd[T any](spec ResourceSpec[T]) *cobra.Command {
 }
 
 // annotate stamps an MCP classification annotation on a command (set once, in the builder).
+//
+// It writes the internal mcp.* key the agent guard buckets on, plus the singular MCP hint
+// keys ophis reads. Only the latter reach the exported tool list: a host running a
+// read-only session allows a tool only when readOnlyHint is strictly true, and drops the
+// whole server when nothing qualifies. Emitting only the internal keys looks correct in
+// review and in any grep, yet exports annotations:null for every tool.
 func annotate(cmd *cobra.Command, kind string) {
 	if cmd.Annotations == nil {
 		cmd.Annotations = map[string]string{}
 	}
 	cmd.Annotations[kind] = "true"
+
+	// Every command here talks to the Lemon Squeezy API. There is no "write" key in MCP:
+	// a write is openWorldHint with readOnlyHint and destructiveHint absent.
+	cmd.Annotations[ophis.AnnotationOpenWorld] = "true"
+	switch kind {
+	case annReadOnly:
+		cmd.Annotations[ophis.AnnotationReadOnly] = "true"
+	case annDestructive:
+		cmd.Annotations[ophis.AnnotationDestructive] = "true"
+	}
 }
 
 // singular is a crude depluralizer good enough for our resource names.
