@@ -4,7 +4,7 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.1] - 2026-08-05
 
 ### Fixed
 - MCP tools now carry the hint keys ophis actually reads (`readOnlyHint`, `destructiveHint`,
@@ -12,6 +12,19 @@ All notable changes to this project are documented here. The format is based on
   `mcp.*` keys, so every tool exported `annotations: null` and hosts enforcing a read-only
   session dropped the whole server. 39 of 63 tools are now marked read-only. The agent guard
   is unaffected — it still buckets on the internal keys.
+
+## [0.3.0] - 2026-07-15
+
+### Added
+
+- `lsqueezy update` — self-update to the latest release.
+
+### Changed
+
+- CI and release now delegate to the org's reusable `go-ci` / `go-release` workflows, with
+  Dependabot (gomod + github-actions) grouped weekly and integration-test coverage enabled.
+- Docs site: centered header, badge cleanup, GA4 analytics sourced from a CI variable, and a
+  Search Console verification file.
 
 ## [0.2.4] - 2026-07-12
 
