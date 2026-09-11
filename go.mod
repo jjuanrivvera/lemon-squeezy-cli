@@ -1,8 +1,7 @@
 module github.com/jjuanrivvera/lemon-squeezy-cli
 
-go 1.25.0
+go 1.26.8
 
-toolchain go1.25.12
 
 require (
 	github.com/itchyny/gojq v0.12.19
