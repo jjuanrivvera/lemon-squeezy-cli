@@ -15,6 +15,8 @@
 
 [Documentation](https://jjuanrivvera.github.io/lemon-squeezy-cli/) · [Commands](https://jjuanrivvera.github.io/lemon-squeezy-cli/commands/)
 
+![lsqueezy in action](assets/demo.gif)
+
 </div>
 
 ---
