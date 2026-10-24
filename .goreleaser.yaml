@@ -46,8 +46,8 @@ homebrew_casks:
     homepage: https://github.com/jjuanrivvera/lemon-squeezy-cli
     hooks:
       post:
-        install: |
-          system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/lsqueezy"]
+        install_steps: |
+          run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{ .StagedPath }}/lsqueezy"]
 
 scoops:
   # Same cross-repo token requirement as the Homebrew tap (the bucket repo must already exist).
